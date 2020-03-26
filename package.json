@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/verardisoft/node-red-contrib-advanced-ftp"
+    "url": "https://github.com/anversoft/node-red-contrib-advanced-ftp"
   },
   "node-red": {
     "nodes": {
