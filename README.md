@@ -13,7 +13,7 @@ Install
 
 Run the following command in the root directory of your Node-RED install
 
-    `npm install node-red-contrib-advanced-ftp`
+    npm install node-red-contrib-advanced-ftp
 
 Restart your Node-RED instance, the ftp node appears in the palette and ready for use.
 
