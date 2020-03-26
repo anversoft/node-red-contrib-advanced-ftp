@@ -35,9 +35,9 @@ The node-red-contrib-advanced-ftp uses the following open source software:
 License
 -------
 
-See [license](https://github.com/verardisoft/node-red-contrib-advanced-ftp/blob/master/LICENSE) (Apache License Version 2.0).
+See [license](https://github.com/anversoft/node-red-contrib-advanced-ftp/blob/master/LICENSE) (Apache License Version 2.0).
 
 Contributing
 -------
 
-Both submitting issues to [GitHub issues](https://github.com/verardisoft/node-red-contrib-advanced-ftp/issues) and Pull requests are welcome to contribute.
+Both submitting issues to [GitHub issues](https://github.com/anversoft/node-red-contrib-advanced-ftp/issues) and Pull requests are welcome to contribute.
