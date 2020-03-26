@@ -1,0 +1,11 @@
+   =========================================================================
+   ==  NOTICE file corresponding to the section 4 d of                    ==
+   ==  the Apache License, Version 2.0,                                   ==
+   =========================================================================
+
+    Node RED Advanced FTP Client Node code
+    Copyright 2020 Andrea Verardi.
+
+    This software contains code derived from node-red-contrib-ftp 
+    developed by Atsushi Kojo "joeartsea" (https://github.com/joeartsea/node-red-contrib-ftp)
+   
