@@ -1,5 +1,5 @@
 # node-red-contrib-advanced-ftp
-A Node-RED node to and Advanced FTP Server
+A Node-RED node to and Advanced FTP Client
 
 node-red-contrib-advanced-ftp is a modified version of <a href="https://github.com/joeartsea/node-red-contrib-ftp" target="_new">node-red-contrib-ftp</a> with the addition of multiple commands and the possibility to modify the parameters during runtime
 
