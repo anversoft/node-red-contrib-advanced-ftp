@@ -42,10 +42,14 @@ limitations under the License.
     <input type="text" id="node-config-input-keepalive" placeholder="10000">
   </div>
   <div class="form-row">
-    <label for="node-input-secure"><i class="fa fa-key"></i> Data connection encryption</label>
-    <input type="checkbox" id="node-input-secure" placeholder="once" style="width: 10%; vertical-align: top;">
+    <label for="node-config-input-secure"><i class="fa fa-key"></i> Data connection encryption</label>
+    <input type="checkbox" id="node-config-input-secure" placeholder="once" style="width: 10%; vertical-align: top;">
     <label for="node-config-input-secureOptions" style="width: 20%; vertical-align: top;"> Secure Options</label>
     <input type="text" id="node-config-input-secureOptions" style="width: 35%; vertical-align: top;">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name">
   </div>
 </script>
 
@@ -80,6 +84,16 @@ limitations under the License.
 </dl>
 </li>
 <li>LIST: Retrieves the directory listing of the specified directory.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.workingDir</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>LIST SAFE: Similar to LIST, except the directory is temporarily changed to <code>msg.workingDir</code> to retrieve the directory listing.
 <dl>
 <dd>Require:</dd>
 <dd>
@@ -175,7 +189,57 @@ limitations under the License.
 <dd>No Parameters</dd>
 </dl>
 </li>
+<li>SITE: Sends <code>msg.command</code> using SITE.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.command</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>SIZE: Retrieves the size of <code>msg.path</code> or <code>msg.oldPath</code>.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.path</code> or <code>msg.oldPath</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>LASTMOD: Retrieves the last modified date and time of <code>msg.path</code> or <code>msg.oldPath</code>.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.path</code> or <code>msg.oldPath</code></li>
+</ol>
+</dd>
+</dl>
+</li>
 </ul>
+<dt class="optional">dataType <span class="property-type">string</span></dt>
+<dd>sets the transfer data type:</dd>
+<ul>
+<li>BINARY: Sets the transfer data type to binary (default at time of connection).
+<dl>
+<dd>Require:</dd>
+<dd>No Parameters</dd>
+</dl>
+</li>
+<li>ASCII: Sets the transfer data type to ASCII.
+<dl>
+<dd>Require:</dd>
+<dd>No Parameters</dd>
+</dl>
+</li>
+</ul>
+<dt class="optional">command <span class="property-type">string</span></dt>
+<dd>the SITE command.</dd> 
+<dt class="optional">abort <span class="property-type">boolean</span></dt>
+<dd>aborts the current data transfer.</dd> 
 <dt class="optional">workingDir <span class="property-type">string</span></dt>
 <dd>the path of the working directory on the remote FTP.</dd>
 <dt class="optional">filename <span class="property-type">string</span></dt>
@@ -195,7 +259,7 @@ limitations under the License.
 </dl>
 <h3>Outputs</h3>
 <ol class="node-ports">
-<li>LIST Output:
+<li>LIST and LIST SAFE Output:
 <dl class="message-properties">
 <dt>payload <span class="property-type">array</span></dt>
 <dd>Array of the file/folders in the <code>msg.workingDir</code> folder.</dd>
@@ -279,6 +343,48 @@ limitations under the License.
 <dd>Command sent to the FTP server.</dd>
 </dl>
 </li>
+<li>SITE Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">string</span></dt>
+<dd>Message from the server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>responseCode <span class="property-type">integer</span></dt>
+<dd>Response Code.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>SIZE Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">integer</span></dt>
+<dd>The size of <code>msg.path</code> in bytes.</dd>
+</dl>
+<dl class="message-properties">
+<dt>path <span class="property-type">string</span></dt>
+<dd>Path/name of the file/directory on the FTP Server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>LAST MOD Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">date</span></dt>
+<dd>Last modify of <code>msg.path</code>.</dd>
+</dl>
+<dl class="message-properties">
+<dt>path <span class="property-type">string</span></dt>
+<dd>Path/name of the file/directory on the FTP Server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
 </ol>
 </script>
 
@@ -294,13 +400,14 @@ limitations under the License.
       user: { value: '' },
       connTimeout: { value: '' },
       pasvTimeout: { value: '' },
-      keepalive: { value: '' }
+      keepalive: { value: '' },
+      name : {value: ''}
     },
     credentials: {
       password: { type: 'password', required: true },
     },
     label: function () {
-      return this.host
+      return this.name || this.host
     }
   });
 </script>
@@ -315,6 +422,7 @@ limitations under the License.
     <select type="text" id="node-input-operation">
       <option value="status">STATUS</option>  
       <option value="list">LIST</option>
+      <option value="listSafe">LIST SAFE</option>
       <option value="get">GET</option>
       <option value="put">PUT</option>
       <option value="append">APPEND</option>
@@ -324,6 +432,16 @@ limitations under the License.
       <option value="rmdir">RMDIR</option>
       <option value="pwd">PWD</option>
       <option value="system">SYSTEM</option>
+      <option value="site">SITE</option>
+      <option value="size">SIZE</option>
+      <option value="lastMod">LAST MOD</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-dataType"><i class="fa fa-file-code-o"></i> Data Type</label>
+    <select type="text" id="node-input-dataType">
+      <option value="binary">BINARY</option>  
+      <option value="ascii">ASCII</option>
     </select>
   </div>
   <div class="form-row input-filename-row hidden">
@@ -346,6 +464,10 @@ limitations under the License.
     <label for="node-input-newPath"><i class="fa fa-file"></i> New Path</label>
     <input type="text" id="node-input-newPath" placeholder="New Path">
   </div>
+  <div class="form-row input-command-row hidden">
+    <label for="node-input-command"><i class="fa fa-terminal"></i> Command</label>
+    <input type="text" id="node-input-command" placeholder="Command">
+  </div>
   <div class="form-row input-throwError-row">
     <label for="node-input-throwError"><i class="fa fa-exclamation-triangle"></i> Throw Error</label>
     <input type="checkbox" id="node-input-throwError">
@@ -355,7 +477,7 @@ limitations under the License.
     <input type="checkbox" id="node-input-showError">
   </div>  
   <div class="form-row">
-    <label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
   </div>
 </script>
@@ -367,11 +489,13 @@ limitations under the License.
     defaults: {
       ftp: { type: 'advanced-ftp-config', required: true },
       operation: { value: 'status', required: true },
+      dataType: { value: 'binary'},
       filename: { value: '' },
       localFilename: { value: '' },
       workingDir: { value: '' },
       oldPath: { value: '' },
       newPath: { value: '' },
+      command: { value: '' },
       throwError: { value: false },
       showError: { value: true },
       name: { value: '' }
@@ -381,7 +505,7 @@ limitations under the License.
     icon: "file.png",
     label: function () {
       var ftpNode = RED.nodes.node(this.ftp);
-      return this.name || 'Advanced Ftp';
+      return this.name || this.operation.toLocaleUpperCase();
     },
     labelStyle: function () {
       return this.name ? 'node_label_italic' : '';
@@ -392,6 +516,7 @@ limitations under the License.
       var workingDir = $(".input-workingDir-row");
       var oldPath = $(".input-oldPath-row");
       var newPath = $(".input-newPath-row");
+      var command = $(".input-command-row");
       $("#node-input-operation").change(function () {
         var id = $("#node-input-operation option:selected").val();
         console.log(id);
@@ -401,13 +526,15 @@ limitations under the License.
           workingDir.hide();
           oldPath.hide();
           newPath.hide();
+          command.hide();
         }
-        else if (id == 'list') {
+        else if (id == 'list' || id == 'listSafe') {
           filename.hide();
           localFilename.hide();
           workingDir.show();
           oldPath.hide();
           newPath.hide();
+          command.hide();
 
         }
         else if (id == 'rename') {
@@ -416,6 +543,7 @@ limitations under the License.
           workingDir.hide();
           oldPath.show();
           newPath.show();
+          command.hide();
         }
         else if (id == 'mkdir') {
           filename.hide();
@@ -423,13 +551,15 @@ limitations under the License.
           workingDir.hide();
           oldPath.hide();
           newPath.show();
+          command.hide();
         }
-        else if (id == 'rmdir') {
+        else if (id == 'rmdir' || id == 'lastMod' || id == 'size') {
           filename.hide();
           localFilename.hide();
           workingDir.hide();
           oldPath.show();
           newPath.hide();
+          command.hide();
         }
         else if (id == 'put' || id == 'get' || id == 'append') {
           filename.show();
@@ -437,6 +567,15 @@ limitations under the License.
           workingDir.hide();
           oldPath.hide();
           newPath.hide();
+          command.hide();
+        }
+        else if (id == 'site') {
+          filename.hide();
+          localFilename.hide();
+          workingDir.hide();
+          oldPath.hide();
+          newPath.hide();
+          command.show();
         }
         else {
           filename.show();
@@ -444,6 +583,7 @@ limitations under the License.
           workingDir.hide();
           oldPath.hide();
           newPath.hide();
+          command.hide();
         }
       });
     }
