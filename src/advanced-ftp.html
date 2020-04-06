@@ -1,0 +1,595 @@
+<!--
+Copyright 2020 Andrea Verardi
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="advanced-ftp-config">
+  <div class="form-row">
+    <label for="node-config-input-host"><i class="fa fa-bookmark"></i> Host</label>
+    <input type="text" id="node-config-input-host" placeholder="localhost" style="width: 40%;" />
+    <label for="node-config-input-port" style="margin-left: 10px; width: 35px; "> Port</label>
+    <input type="text" id="node-config-input-port" placeholder="21" style="width:45px">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-user"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-config-input-user" placeholder="anonymous" />
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-config-input-password">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-connTimeout"><i class="fa fa-clock-o"></i> Connection Timeout</label>
+    <input type="text" id="node-config-input-connTimeout" placeholder="10000">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-pasvTimeout"><i class="fa fa-clock-o"></i> PASV Timeout</label>
+    <input type="text" id="node-config-input-pasvTimeout" placeholder="10000">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-keepalive"><i class="fa fa-clock-o"></i> Keepalive</label>
+    <input type="text" id="node-config-input-keepalive" placeholder="10000">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-secure"><i class="fa fa-key"></i> Data connection encryption</label>
+    <input type="checkbox" id="node-config-input-secure" placeholder="once" style="width: 10%; vertical-align: top;">
+    <label for="node-config-input-secureOptions" style="width: 20%; vertical-align: top;"> Secure Options</label>
+    <input type="text" id="node-config-input-secureOptions" style="width: 35%; vertical-align: top;">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name">
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="advanced-ftp-config">
+  <p>Configuration for a connection to an remote FTP server.</p>
+  <p>&nbsp;</p>
+  <p><code>Host</code> is the address of your FTP server, it can be a URL or an IP address. Default: <code>localhost</code></p>
+  <p><code>Port</code> specifies on which port the FTP server listens for new control connections. Default: <code>21</code></p>
+  <p><code>User</code> specifies the username of the account to be used when logging into the FTP server. Default: <code>anonymous</code></p>
+  <p><code>Password</code>  specifies the password of the account to be used when logging into the FTP server. Required input.</p>
+  <p><code>Connection Timeout</code>  is the time in milliseconds that the FTP client will try to connect to a server. Default: <code>10000</code></p>
+  <p><code>PASV Timeout</code>is the time in milliseconds to wait for a PASV data connection to be established. Default: <code>10000</code></p>
+  <p><code>Keepalive</code> is the time in milliseconds to send a 'dummy' (NOOP) command to keep the connection alive. Default: <code>10000</code></p>
+  <p><code>Data connection encryption</code> is set to true for both control and data connection encryption. Default: <code>false</code></p>
+  <p><code>Secure Options</code> is an additional options to be passed to tls.connect(). Default: (none)</p>
+</script>
+
+<script type="text/x-red" data-help-name="advanced-ftp">
+  <p>Allows several commands on a remote FTP server.</p>
+<p>&nbsp;</p>
+<p>The input parameters have priority over the parameters that can be set in the node.</p>
+<p>　　</p>
+<h3>Inputs</h3>
+<dl class="message-properties">
+<dt class="optional">operation <span class="property-type">string</span></dt>
+<dd>is the command to be sent to the FTP server:</dd>
+<ul>
+<li>STATUS: Retrieves human-readable information about the server's status
+<dl>
+<dd>Require:</dd>
+<dd>No Parameters</dd>
+</dl>
+</li>
+<li>LIST: Retrieves the directory listing of the specified directory.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.workingDir</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>LIST SAFE: Similar to LIST, except the directory is temporarily changed to <code>msg.workingDir</code> to retrieve the directory listing.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.workingDir</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>GET: Retrieves a file from the server.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.filename</code></li>
+<li><code>msg.localFilename</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>PUT: Sends a file to the server.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.filename</code></li>
+<li><code>msg.localFilename</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>APPEND: Same as put, except if <code>msg.filename</code> already exists, it will be appended to instead of overwritten.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.filename</code></li>
+<li><code>msg.localFilename</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>RENAME: Renames <code>msg.oldPath</code> to <code>msg.newPath</code> on the server.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.oldPath</code></li>
+<li><code>msg.newPath</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>DELETE: Deletes a file on the server.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.filename</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>MKDIR: Creates a new directory on the server.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.path</code> or <code>msg.newPath</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>RMDIR: Removes a directory on the server.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.path</code> or <code>msg.oldPath</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>PWD: Retrieves the current working directory
+<dl>
+<dd>Require:</dd>
+<dd>No Parameters</dd>
+</dl>
+</li>
+<li>SYSTEM: Retrieves the server's operating system
+<dl>
+<dd>Require:</dd>
+<dd>No Parameters</dd>
+</dl>
+</li>
+<li>SITE: Sends <code>msg.command</code> using SITE.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.command</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>SIZE: Retrieves the size of <code>msg.path</code> or <code>msg.oldPath</code>.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.path</code> or <code>msg.oldPath</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li>LASTMOD: Retrieves the last modified date and time of <code>msg.path</code> or <code>msg.oldPath</code>.
+<dl>
+<dd>Require:</dd>
+<dd>
+<ol>
+<li><code>msg.path</code> or <code>msg.oldPath</code></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ul>
+<dt class="optional">dataType <span class="property-type">string</span></dt>
+<dd>sets the transfer data type:</dd>
+<ul>
+<li>BINARY: Sets the transfer data type to binary (default at time of connection).
+<dl>
+<dd>Require:</dd>
+<dd>No Parameters</dd>
+</dl>
+</li>
+<li>ASCII: Sets the transfer data type to ASCII.
+<dl>
+<dd>Require:</dd>
+<dd>No Parameters</dd>
+</dl>
+</li>
+</ul>
+<dt class="optional">command <span class="property-type">string</span></dt>
+<dd>the SITE command.</dd> 
+<dt class="optional">abort <span class="property-type">boolean</span></dt>
+<dd>aborts the current data transfer.</dd> 
+<dt class="optional">workingDir <span class="property-type">string</span></dt>
+<dd>the path of the working directory on the remote FTP.</dd>
+<dt class="optional">filename <span class="property-type">string</span></dt>
+<dd>the path/name of the file on the remote FTP server.</dd>
+<dt class="optional">localFilename <span class="property-type">string</span></dt>
+<dd>the path/name of the file on the local machine.</dd>
+<dt class="optional">oldPath <span class="property-type">string</span></dt>
+<dd>the path of the file/directory on the remote FTP server to be removed/replaced.</dd>
+<dt class="optional">newPath <span class="property-type">string</span></dt>
+<dd>the path of the file/directory on the remote FTP server to be created/replaced.</dd>
+<dt class="optional">path <span class="property-type">string</span></dt>
+<dd>the path of the directory on the remote FTP server to be created/removed.</dd>
+<dt class="optional">showError <span class="property-type">boolean</span></dt>
+<dd>determines whether errors are to be handled by the status node.</dd>
+<dt class="optional">throwError <span class="property-type">boolean</span></dt>
+<dd>determines whether errors are to be handled by the catch node.</dd>
+</dl>
+<h3>Outputs</h3>
+<ol class="node-ports">
+<li>LIST and LIST SAFE Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">array</span></dt>
+<dd>Array of the file/folders in the <code>msg.workingDir</code> folder.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>STATUS, PWD and SYSTEM Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">string</span></dt>
+<dd>Message from the server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>GET, PUT, APPEND and DELETE Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">string</span></dt>
+<dd>Message that processing is complete.</dd>
+</dl>
+<dl class="message-properties">
+<dt>filename <span class="property-type">string</span></dt>
+<dd>The path/name of the file on the remote FTP server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>localFilename <span class="property-type">string</span></dt>
+<dd>The path/name of the file on the local machine.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>MKDIR Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">string</span></dt>
+<dd>Message from the server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>path <span class="property-type">string</span></dt>
+<dd>Path of the directory created on the FTP server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>RMDIR Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">string</span></dt>
+<dd>Message from the server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>path <span class="property-type">string</span></dt>
+<dd>Path of the directory removed on the FTP server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>RENAME Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">string</span></dt>
+<dd>Message from the server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>oldPath <span class="property-type">string</span></dt>
+<dd>Old path/name of the file/directory on the FTP Server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>newPath <span class="property-type">string</span></dt>
+<dd>New path/name of the file/directory on the FTP Server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>SITE Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">string</span></dt>
+<dd>Message from the server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>responseCode <span class="property-type">integer</span></dt>
+<dd>Response Code.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>SIZE Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">integer</span></dt>
+<dd>The size of <code>msg.path</code> in bytes.</dd>
+</dl>
+<dl class="message-properties">
+<dt>path <span class="property-type">string</span></dt>
+<dd>Path/name of the file/directory on the FTP Server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+<li>LAST MOD Output:
+<dl class="message-properties">
+<dt>payload <span class="property-type">date</span></dt>
+<dd>Last modify of <code>msg.path</code>.</dd>
+</dl>
+<dl class="message-properties">
+<dt>path <span class="property-type">string</span></dt>
+<dd>Path/name of the file/directory on the FTP Server.</dd>
+</dl>
+<dl class="message-properties">
+<dt>operation <span class="property-type">string</span></dt>
+<dd>Command sent to the FTP server.</dd>
+</dl>
+</li>
+</ol>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType('advanced-ftp-config', {
+    category: 'config',
+    color: "BurlyWood",
+    defaults: {
+      host: { value: '' },
+      port: { value: '' },
+      secure: { value: false },
+      secureOptions: { value: '' },
+      user: { value: '' },
+      connTimeout: { value: '' },
+      pasvTimeout: { value: '' },
+      keepalive: { value: '' },
+      name : {value: ''}
+    },
+    credentials: {
+      password: { type: 'password', required: true },
+    },
+    label: function () {
+      return this.name || this.host
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="advanced-ftp">
+  <form>
+  <div class="form-row">
+    <label style="min-width:120px" for="node-input-ftp"><i class="fa fa-user"></i> FTP Server</label>
+    <input type="text" id="node-input-ftp">
+  </div>
+  <div class="form-row">
+    <label style="min-width:120px" for="node-input-operation"><i class="fa fa-wrench"></i> Operation</label>
+    <select type="text" id="node-input-operation">
+      <option value="status">STATUS</option>  
+      <option value="list">LIST</option>
+      <option value="listSafe">LIST SAFE</option>
+      <option value="get">GET</option>
+      <option value="put">PUT</option>
+      <option value="append">APPEND</option>
+      <option value="rename">RENAME</option> 
+      <option value="delete">DELETE</option>
+      <option value="mkdir">MKDIR</option>
+      <option value="rmdir">RMDIR</option>
+      <option value="pwd">PWD</option>
+      <option value="system">SYSTEM</option>
+      <option value="site">SITE</option>
+      <option value="size">SIZE</option>
+      <option value="lastMod">LAST MOD</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label style="min-width:120px" for="node-input-dataType"><i class="fa fa-file-code-o"></i> Data Type</label>
+    <select type="text" id="node-input-dataType">
+      <option value="binary">BINARY</option>  
+      <option value="ascii">ASCII</option>
+    </select>
+  </div>
+  <div class="form-row input-filename-row hidden">
+    <label style="min-width:120px" for="node-input-filename"><i class="fa fa-file"></i> File Name</label>
+    <input type="text" id="node-input-filename" placeholder="File Name">
+  </div>
+  <div class="form-row input-localFilename-row hidden">
+    <label style="min-width:120px" for="node-input-localFilename"><i class="fa fa-file"></i> Local File Name</label>
+    <input type="text" id="node-input-localFilename" placeholder="Local File Name">
+  </div>
+  <div class="form-row input-workingDir-row hidden">
+    <label style="min-width:120px" for="node-input-workingDir"><i class="fa fa-file"></i> Working Directory</label>
+    <input type="text" id="node-input-workingDir" placeholder="Working Directory">
+  </div>
+  <div class="form-row input-oldPath-row hidden">
+    <label style="min-width:120px" for="node-input-oldPath"><i class="fa fa-file"></i> Old Path</label>
+    <input type="text" id="node-input-oldPath" placeholder="Old Path">
+  </div>
+  <div class="form-row input-newPath-row hidden">
+    <label style="min-width:120px" for="node-input-newPath"><i class="fa fa-file"></i> New Path</label>
+    <input type="text" id="node-input-newPath" placeholder="New Path">
+  </div>
+  <div class="form-row input-command-row hidden">
+    <label style="min-width:120px" for="node-input-command"><i class="fa fa-terminal"></i> Command</label>
+    <input type="text" id="node-input-command" placeholder="Command">
+  </div>
+  <div class="form-row input-throwError-row">
+    <label for="node-input-throwError"><i class="fa fa-exclamation-triangle"></i> Throw Error</label>
+    <input type="checkbox" id="node-input-throwError">
+  </div>
+  <div class="form-row input-showError-row">
+    <label for="node-input-showError"><i class="fa fa-exclamation-circle"></i> Show Error</label>
+    <input type="checkbox" id="node-input-showError">
+  </div>  
+  <div class="form-row">
+    <label style="min-width:120px" for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+</form>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType('advanced-ftp', {
+    category: 'Advanced FTP',
+    color: "#d8bfd8",
+    paletteLabel: "Advanced FTP",
+    defaults: {
+      ftp: { type: 'advanced-ftp-config', required: true },
+      operation: { value: 'status', required: true },
+      dataType: { value: 'binary'},
+      filename: { value: '' },
+      localFilename: { value: '' },
+      workingDir: { value: '' },
+      oldPath: { value: '' },
+      newPath: { value: '' },
+      command: { value: '' },
+      throwError: { value: false },
+      showError: { value: true },
+      name: { value: '' }
+    },
+    
+    inputs: 1,
+    outputs: 1,
+    icon: "file.png",
+    label: function () {
+      var ftpNode = RED.nodes.node(this.ftp);
+      return this.name || this.operation.toLocaleUpperCase();
+    },
+    labelStyle: function () {
+      return this.name ? 'node_label_italic' : '';
+    },
+    oneditprepare: function () {
+      var filename = $(".input-filename-row");
+      var localFilename = $(".input-localFilename-row");
+      var workingDir = $(".input-workingDir-row");
+      var oldPath = $(".input-oldPath-row");
+      var newPath = $(".input-newPath-row");
+      var command = $(".input-command-row");
+      $("#node-input-operation").change(function () {
+        var id = $("#node-input-operation option:selected").val();
+        console.log(id);
+        if (id == 'status' || id == 'pwd' || id == 'system') {
+          filename.hide();
+          localFilename.hide();
+          workingDir.hide();
+          oldPath.hide();
+          newPath.hide();
+          command.hide();
+        }
+        else if (id == 'list' || id == 'listSafe') {
+          filename.hide();
+          localFilename.hide();
+          workingDir.show();
+          oldPath.hide();
+          newPath.hide();
+          command.hide();
+
+        }
+        else if (id == 'rename') {
+          filename.hide();
+          localFilename.hide();
+          workingDir.hide();
+          oldPath.show();
+          newPath.show();
+          command.hide();
+        }
+        else if (id == 'mkdir') {
+          filename.hide();
+          localFilename.hide();
+          workingDir.hide();
+          oldPath.hide();
+          newPath.show();
+          command.hide();
+        }
+        else if (id == 'rmdir' || id == 'lastMod' || id == 'size') {
+          filename.hide();
+          localFilename.hide();
+          workingDir.hide();
+          oldPath.show();
+          newPath.hide();
+          command.hide();
+        }
+        else if (id == 'put' || id == 'get' || id == 'append') {
+          filename.show();
+          localFilename.show();
+          workingDir.hide();
+          oldPath.hide();
+          newPath.hide();
+          command.hide();
+        }
+        else if (id == 'site') {
+          filename.hide();
+          localFilename.hide();
+          workingDir.hide();
+          oldPath.hide();
+          newPath.hide();
+          command.show();
+        }
+        else {
+          filename.show();
+          localFilename.hide();
+          workingDir.hide();
+          oldPath.hide();
+          newPath.hide();
+          command.hide();
+        }
+      });
+    }
+  });
+</script>

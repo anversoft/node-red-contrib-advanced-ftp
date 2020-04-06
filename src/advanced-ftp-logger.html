@@ -1,0 +1,185 @@
+<!--
+Copyright 2020 Andrea Verardi
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<script type="text/x-red" data-help-name="advanced-ftp-logger">
+<p>
+  Allows data logging to an FTP server.
+
+  Currently there is no infrastructure to automatically generate the file in the local folder, 
+  so you have to use the Node Red native File node set to "OVERWRITE" and call the file "data.txt".
+</p>
+<p>&nbsp;</p>
+<p>The input parameters have priority over the parameters that can be set in the node.</p>
+<p>　　</p>
+<h3>Inputs</h3>
+
+<dl class="message-properties">
+<dt class="optional">localDirectory <span class="property-type">string</span></dt>
+<dd>the path of the DIRECTORY on the local machine.</dd> 
+
+<dt class="optional">ftpDirectory <span class="property-type">string</span></dt>
+<dd>the path of the DIRECTORY on the remote FTP</dd> 
+
+<dt class="optional">ftpFilename <span class="property-type">string</span></dt>
+<dd>the name of the file on the remote FTP server (the file will be saved as .txt).</dd>
+
+<dt class="optional">maxFiles <span class="property-type">number</span></dt>
+<dd>maximum number of files saved in the FTP Directory (MUST be between: 1 and 100).</dd>
+
+<dt class="optional">maxFileSize <span class="property-type">number</span></dt>
+<dd>maximum size of each file in the FTP Directory (MUST be between: 1 and 1024).</dd>
+
+<dt class="optional">fileSizeDim <span class="property-type">string</span></dt>
+<dd>digital information unit (MUST be: "b" (Bytes), "kb"(Kilobytes), "mb"(Megabytes) or "gb"(Gigabytes)).</dd>
+
+<dt class="optional">showError <span class="property-type">boolean</span></dt>
+<dd>determines whether errors are to be handled by the status node.</dd>
+
+<dt class="optional">throwError <span class="property-type">boolean</span></dt>
+<dd>determines whether errors are to be handled by the catch node.</dd>
+
+</dl>
+
+<h3>Outputs</h3>
+<ol class="node-ports">
+<li>Input Object:
+<dl class="message-properties">
+<dt>msg <span class="property-type">object</span></dt>
+<dd>Returns the input message.</dd>
+</dl>
+</ol>
+
+<h3>Details</h3>
+<p> 
+  The Advanced FTP Logger generates a folder containing log files on the FTP server.
+  All parameters can be set by the <code>msg</code> object.
+</p>
+
+<p> 
+  <code>msg.ftpFilename</code> uses the "#" tag to increment the number of files from 1 to <code>msg.maxFiles</code> (the file number starts at 0).
+</p>
+
+<p>
+  THE "#" TAG MUST BE SET ONLY ONCE, OTHERWISE THE FILE IS DETECTED AS INVALID (EXAMPLE: data#, sensors#, name#), MAX 14 CHARACTERS.
+</p>
+
+<p>
+  Once the presence of the local file has been determined, 
+  at each input, the file number 0 (example: data0.txt) on the FTP server is updated with the content of the "data.txt" file. 
+  If file 0 reaches its maximum size (it can be set dynamically by <code>msg.maxFileSize</code> and <code>msg.fileSizeDim</code>), 
+  all files are renamed and a new 0 file is created.
+</p>
+
+<p>
+If the folder on the FTP server is not present, the path is created and file 0 is generated (for example "data0.txt").
+</p>
+
+<p>
+When the maximum number of files is reached and file 0 reaches the maximum size, 
+the last file is kept until the next input, which will be deleted. 
+This operation allows the node to better manage the list of files and not generate errors.
+</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('advanced-ftp-logger', {
+        category: 'Advanced FTP',
+        color: "#d8bfd8",
+        paletteLabel: "Advanced FTP Logger",
+        defaults: {
+            ftp: { type: 'advanced-ftp-config', required: true },
+            localDirectory: { value: '' },
+            ftpDirectory: { value: '' },
+            ftpFilename: { value: 'data#', required: true, validate:RED.validators.regex(/^([a-zA-Z]{1,14}#{1})$/)},
+            maxFiles: {value: '2', required: true, validate: RED.validators.regex(/^([1-9]|[1-8][0-9]|9[0-9]|100)$/)},
+            maxFileSize: { value: '100', required: true, validate: RED.validators.regex(/^([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|10[01][0-9]|102[0-4])$/)},
+            fileSizeDim: { value: 'kb', required: true },
+            includeTimestamps: { value: true },
+            throwError: { value: false },
+            showError: { value: true },
+            name: { value: '' }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "db.png",
+        label: function () {
+            return this.name || "Advanced FTP Logger";
+        },
+        labelStyle: function () {
+            return this.name ? 'node_label_italic' : '';
+        },
+    });
+</script>
+
+<script type="text/x-red" data-template-name="advanced-ftp-logger">
+    <form>
+      <div class="form-row">
+        <label style="min-width:160px" for="node-input-ftp"><i class="fa fa-user"></i> FTP Server</label>
+        <input type="text" id="node-input-ftp">
+      </div>
+    
+      <div class="form-row">
+        <label style="min-width:160px" for="node-input-localDirectory"><i class="fa fa-file-o"></i> Local Directory</label>
+        <input type="text" id="node-input-localDirectory" placeholder="Local Directory">
+      </div>
+    
+      <div class="form-row">
+        <label style="min-width:160px" for="node-input-ftpDirectory"><i class="fa fa-file-archive-o"></i> FTP Directory</label>
+        <input type="text" id="node-input-ftpDirectory" placeholder="FTP Server Directory">
+      </div>
+    
+      <div class="form-row">
+        <label style="min-width:160px" for="node-input-ftpFilename"><i class="fa fa-files-o"></i> FTP File Name</label>
+        <input type="text" id="node-input-ftpFilename" placeholder="FTP File Name">
+      </div>
+
+      <div class="form-row">
+        <label style="min-width:160px" for="node-input-maxFiles"><i class="fa fa-sort-alpha-asc"></i> Max Files</label>
+        <input type="text" style="max-width:100px" id="node-input-maxFiles">
+      </div>
+
+      <div class="form-row">
+        <label style="min-width:160px" for="node-input-maxFileSize"><i class="fa fa-list-ol"></i> Max File Size</label>
+        <input type="text" id="node-input-maxFileSize" style="max-width:100px">
+        <select type="text" id="node-input-fileSizeDim" style="max-width:60px">
+            <option value="b">B</option>  
+            <option value="kb">KB</option>
+            <option value="mb">MB</option>
+            <option value="gb">GB</option>
+          </select>
+      </div>
+
+      <div class="form-row input-includeTimestamps-row hidden">
+        <label style="min-width:160px" for="node-input-includeTimestamps"><i class="fa fa-calendar"></i> Inlcude Timestamp Property</label>
+        <input type="checkbox" id="node-input-includeTimestamps" style="max-width:30px">
+      </div>
+
+      <div class="form-row">
+        <label style="min-width:160px" for="node-input-showError"><i class="fa fa-exclamation-circle"></i> Show Error</label>
+        <input type="checkbox" id="node-input-showError" style="max-width:30px">
+      </div>
+
+      <div class="form-row">
+        <label style="min-width:160px" for="node-input-throwError"><i class="fa fa-exclamation-triangle""></i> Throw Error</label>
+        <input type="checkbox" id="node-input-throwError" style="max-width:30px">
+      </div>
+
+      <div class="form-row">
+        <label style="min-width:160px"  for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+      </div>
+    </form>
+    </script>
