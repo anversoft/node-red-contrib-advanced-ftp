@@ -690,7 +690,7 @@ module.exports = function (RED) {
 
                                         listDeleteLastFileAndPutNew(localpath, false);
 
-                                        listAndOrdFiles(false, 1);
+                                        listAndOrdFiles(true, 1);
 
                                         send(msg);
 
@@ -718,7 +718,7 @@ module.exports = function (RED) {
 
                             node.status({ fill: 'blue', shape: 'ring', text: "Sending: " + localpath + " to " + ftppath });
 
-                            putFile(localpath, ftppath);
+                            putFile(localpath, ftppath, true);
 
                             send(msg);
 
