@@ -1,9 +1,9 @@
 {
   "name": "node-red-contrib-advanced-ftp",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A Node-RED node to and Advanced FTP Client",
   "dependencies": {
-    "fs-extra": "^9.0.0",
+    "fs-extra": "8.1.0",
     "ftp": "^0.3.10"
   },
   "repository": {
