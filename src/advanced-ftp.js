@@ -278,12 +278,29 @@ module.exports = function (RED) {
                         }
 
                         if (operation == 'get') {
-                            result.once('close', function () { conn.end(); });
-                            result.pipe(fs.createWriteStream(localFilename));
-                            node.status({ fill: 'green', shape: 'ring', text: 'GET Successful' });
-                            msg.filename = filename;
-                            msg.localFilename = localFilename;
-                            msg.payload = 'GET operation successful. ' + localFilename;
+                            try {
+                                result.once('close', function () { conn.end(); });
+
+                                node.status({ fill: 'yellow', shape: 'dot', text: 'Pending...' });
+                                let writestream = fs.createWriteStream(localFilename);
+
+                                writestream.on('error', (err) => {
+                                    node.handleErrors(err);
+                                });
+
+                                result.on('end', function () {
+                                    node.status({ fill: 'green', shape: 'ring', text: 'GET Successful' });
+                                    msg.filename = filename;
+                                    msg.localFilename = localFilename;
+                                    msg.payload = 'GET operation successful. ' + localFilename;
+                                    node.send(msg);
+                                });
+
+                                result.pipe(writestream);
+
+                            } catch (err) {
+                                node.handleErrors(err);
+                            }
                         } else if (operation == 'put') {
                             conn.end();
                             node.status({ fill: 'green', shape: 'ring', text: 'PUT Successful' });
@@ -306,8 +323,32 @@ module.exports = function (RED) {
                             msg.filename = filename;
                             msg.payload = result;
                         }
-                        send(msg);
+
+                        if (operation !== 'get') {
+                            send(msg);
+                        }
                     };
+
+                    //Gestisci l'errore del' operazione GET
+                    this.handleErrors = function (err) {
+
+                        node.status({ fill: 'red', shape: 'ring', text: 'Something went wrong...' });
+
+                        if (done) {
+
+                            // Node-RED 1.0 compatible
+
+                            if (throwError) done(err);
+
+                        } else {
+
+                            // Node-RED 0.x compatible
+
+                            if (throwError) node.error(err, msg);
+
+                        }
+
+                    }
 
 
                     this.sendStatus = function (err, result) {
