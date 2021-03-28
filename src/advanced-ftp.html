@@ -469,6 +469,14 @@ limitations under the License.
     <label style="min-width:120px" for="node-input-command"><i class="fa fa-terminal"></i> Command</label>
     <input type="text" id="node-input-command" placeholder="Command">
   </div>
+  <div class="form-row input-recursive-row">
+    <label for="node-input-recursive"><i class="fa fa-folder-open"></i> Recursive</label>
+    <input type="checkbox" id="node-input-recursive">
+  </div>
+  <div class="form-row input-useCompression-row">
+    <label for="node-input-useCompression"><i class="fa fa-file-archive-o"></i> Use Compression</label>
+    <input type="checkbox" id="node-input-useCompression">
+  </div>
   <div class="form-row input-throwError-row">
     <label for="node-input-throwError"><i class="fa fa-exclamation-triangle"></i> Throw Error</label>
     <input type="checkbox" id="node-input-throwError">
@@ -499,6 +507,8 @@ limitations under the License.
       oldPath: { value: '' },
       newPath: { value: '' },
       command: { value: '' },
+      recursive: { value: false },
+      useCompression: { value: false },
       throwError: { value: false },
       showError: { value: true },
       name: { value: '' }
@@ -521,6 +531,8 @@ limitations under the License.
       var oldPath = $(".input-oldPath-row");
       var newPath = $(".input-newPath-row");
       var command = $(".input-command-row");
+      var useCompression = $(".input-useCompression-row");
+      var recursive = $(".input-recursive-row");
       $("#node-input-operation").change(function () {
         var id = $("#node-input-operation option:selected").val();
         console.log(id);
@@ -531,6 +543,8 @@ limitations under the License.
           oldPath.hide();
           newPath.hide();
           command.hide();
+          recursive.hide();
+          useCompression.hide();
         }
         else if (id == 'list' || id == 'listSafe') {
           filename.hide();
@@ -539,6 +553,8 @@ limitations under the License.
           oldPath.hide();
           newPath.hide();
           command.hide();
+          recursive.hide();
+          useCompression.show();
 
         }
         else if (id == 'rename') {
@@ -548,6 +564,8 @@ limitations under the License.
           oldPath.show();
           newPath.show();
           command.hide();
+          recursive.hide();
+          useCompression.hide();
         }
         else if (id == 'mkdir') {
           filename.hide();
@@ -556,14 +574,28 @@ limitations under the License.
           oldPath.hide();
           newPath.show();
           command.hide();
+          recursive.show();
+          useCompression.hide();
         }
-        else if (id == 'rmdir' || id == 'lastMod' || id == 'size') {
+        else if (id == 'rmdir') {
           filename.hide();
           localFilename.hide();
           workingDir.hide();
           oldPath.show();
           newPath.hide();
           command.hide();
+          recursive.show();
+          useCompression.hide();
+        }
+        else if (id == 'lastMod' || id == 'size') {
+          filename.hide();
+          localFilename.hide();
+          workingDir.hide();
+          oldPath.show();
+          newPath.hide();
+          command.hide();
+          recursive.hide();
+          useCompression.hide();
         }
         else if (id == 'put' || id == 'get' || id == 'append') {
           filename.show();
@@ -572,6 +604,8 @@ limitations under the License.
           oldPath.hide();
           newPath.hide();
           command.hide();
+          recursive.hide();
+          useCompression.show();
         }
         else if (id == 'site') {
           filename.hide();
@@ -580,6 +614,8 @@ limitations under the License.
           oldPath.hide();
           newPath.hide();
           command.show();
+          recursive.hide();
+          useCompression.hide();
         }
         else {
           filename.show();
@@ -588,6 +624,8 @@ limitations under the License.
           oldPath.hide();
           newPath.hide();
           command.hide();
+          recursive.hide();
+          useCompression.hide();
         }
       });
     }

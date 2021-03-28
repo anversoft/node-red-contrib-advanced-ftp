@@ -56,6 +56,8 @@ module.exports = function (RED) {
         this.workingDir = n.workingDir;
         this.oldPath = n.oldPath;
         this.newPath = n.newPath
+        this.useCompression = n.useCompression;
+        this.recursive = n.recursive;
         this.throwError = n.throwError;
         this.showError = n.showError;
         this.ftpConfig = RED.nodes.getNode(this.ftp);
@@ -118,6 +120,20 @@ module.exports = function (RED) {
                 var workingDir = msg.workingDir || node.workingDir || '';
                 if (typeof workingDir != 'string') {
                     workingDir = '';
+                }
+
+                //Il msg.recursive è prioritario sul recursive impostato nel nodo
+                var recursive = node.recursive;
+
+                if ((msg.recursive !== undefined) && (typeof msg.recursive === 'boolean')) {
+                    recursive = msg.recursive;
+                }
+
+                //Il msg.useCompression è prioritario sul useCompression impostato nel nodo
+                var useCompression = node.useCompression;
+
+                if ((msg.useCompression !== undefined) && (typeof msg.useCompression === 'boolean')) {
+                    useCompression = msg.useCompression;
                 }
 
                 //Il msg.showError è prioritario sul showError impostato nel nodo
@@ -517,42 +533,42 @@ module.exports = function (RED) {
                             case 'list':
                                 if (workingDir != '') {
                                     if (workingDir.startsWith('./')) {
-                                        conn.list(workingDir, node.sendMsg);
+                                        conn.list(workingDir, useCompression, node.sendMsg);
                                     } else {
-                                        conn.list('./' + workingDir, node.sendMsg);
+                                        conn.list('./' + workingDir, useCompression, node.sendMsg);
                                     }
                                 } else {
-                                    conn.list(node.sendMsg);
+                                    conn.list('./', useCompression, node.sendMsg);
                                 }
                                 break;
                             case 'listsafe':
                                 if (workingDir != '') {
                                     if (workingDir.startsWith('./')) {
-                                        conn.listSafe(workingDir, node.sendMsg);
+                                        conn.listSafe(workingDir,useCompression, node.sendMsg);
                                     } else {
-                                        conn.listSafe('./' + workingDir, node.sendMsg);
+                                        conn.listSafe('./' + workingDir, useCompression, node.sendMsg);
                                     }
                                 } else {
-                                    conn.listSafe(node.sendMsg);
+                                    conn.listSafe('./', useCompression, node.sendMsg);
                                 }
                                 break;
                             case 'get':
-                                conn.get(filename, node.sendMsg);
+                                conn.get(filename, useCompression, node.sendMsg);
                                 break;
                             case 'append':
-                                conn.append(localFilename, filename, node.sendMsg);
+                                conn.append(localFilename, filename, useCompression, node.sendMsg);
                                 break;
                             case 'put':
-                                conn.put(localFilename, filename, node.sendMsg);
+                                conn.put(localFilename, filename, useCompression, node.sendMsg);
                                 break;
                             case 'rename':
                                 conn.rename(oldPath, newPath, node.sendPaths);
                                 break;
                             case 'mkdir':
-                                conn.mkdir(newPath, node.sendPaths);
+                                conn.mkdir(newPath, recursive, node.sendPaths);
                                 break;
                             case 'rmdir':
-                                conn.rmdir(oldPath, node.sendPaths);
+                                conn.rmdir(oldPath, recursive, node.sendPaths);
                                 break;
                             case 'delete':
                                 conn.delete(filename, node.sendMsg);
