@@ -77,6 +77,9 @@ module.exports = function (RED) {
 
                 //Crea un costruttore per il server ftp
                 var conn = new ftp();
+                
+                // Permetti all'utente di motificare le opzioni
+                var options = msg.options || node.ftpConfig.options;
 
                 //Il msg.filename è prioritario sul filename impostato nel nodo
                 var filename = msg.filename || node.filename || '';
@@ -275,7 +278,7 @@ module.exports = function (RED) {
                     }
 
                     //Visulizza lo status del nodo
-                    node.status({ fill: 'yellow', shape: 'ring', text: operation.toLocaleUpperCase() + ' Operation: ' + node.ftpConfig.options.host + ':' + node.ftpConfig.options.port });
+                    node.status({ fill: 'yellow', shape: 'ring', text: operation.toLocaleUpperCase() + ' Operation: ' + options.host + ':' + options.port });
 
                     //Messaggi per le funzioni GET, PUT, APPEND, DELETE, LIST
                     this.sendMsg = function (err, result) {
@@ -600,7 +603,7 @@ module.exports = function (RED) {
                 });
 
 
-                conn.connect(node.ftpConfig.options);
+                conn.connect(options);
 
                 if (done) {
                     done();

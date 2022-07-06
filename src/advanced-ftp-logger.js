@@ -46,10 +46,15 @@ module.exports = function (RED) {
                 //Crea un costruttore per il server ftp
                 var conn = new ftp();
 
+                // Permetti all'utente di motificare le opzioni
+                var options = msg.options || node.ftpConfig.options;
+
                 //#region VARIABILI LOCALI
 
                 //Il msg.includeTimestamps è prioritario sul includeTimestamps impostato nel nodo NON IMPLEMETATO
                 var includeTimestamps = node.includeTimestamps;
+
+                
 
                 if ((msg.includeTimestamps !== undefined) && (typeof msg.includeTimestamps === 'boolean')) {
                     includeTimestamps = msg.includeTimestamps;
@@ -137,7 +142,7 @@ module.exports = function (RED) {
                 // If this is pre-1.0, 'send' will be undefined, so fallback to node.send
                 send = send || function () { node.send.apply(node, arguments) }
 
-                node.status({ fill: 'blue', shape: 'ring', text: "Connecting: " + node.ftpConfig.options.host + ':' + node.ftpConfig.options.port });
+                node.status({ fill: 'blue', shape: 'ring', text: "Connecting: " + options.host + ':' + options.port });
 
                 //#region Funzioni Server FTP
 
@@ -756,7 +761,7 @@ module.exports = function (RED) {
                 });
 
                 //Connetti il Server FTP
-                conn.connect(node.ftpConfig.options);
+                conn.connect(options);
                 //#endregion
                 if (done) {
                     done();
