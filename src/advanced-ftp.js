@@ -81,6 +81,8 @@ module.exports = function (RED) {
                 // Permetti all'utente di motificare le opzioni
                 var options = msg.options || node.ftpConfig.options;
 
+                delete msg.options;
+
                 //Il msg.filename è prioritario sul filename impostato nel nodo
                 var filename = msg.filename || node.filename || '';
                 if (typeof filename != 'string') {

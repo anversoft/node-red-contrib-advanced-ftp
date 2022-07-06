@@ -49,6 +49,8 @@ module.exports = function (RED) {
                 // Permetti all'utente di motificare le opzioni
                 var options = msg.options || node.ftpConfig.options;
 
+                delete msg.options;
+
                 //#region VARIABILI LOCALI
 
                 //Il msg.includeTimestamps è prioritario sul includeTimestamps impostato nel nodo NON IMPLEMETATO
