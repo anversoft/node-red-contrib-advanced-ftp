@@ -22,7 +22,7 @@ module.exports = function (RED) {
     //Funzione per la configurazione
     function AdvancedFtpNode(n) {
         RED.nodes.createNode(this, n);
-        var credentials = RED.nodes.getCredentials(n.id);
+        var credentials = RED.nodes.getCredentials(n.id) || {};
         this.options = {
             'host': n.host || 'localhost',
             'port': n.port || 21,
