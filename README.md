@@ -49,5 +49,12 @@ See [license](https://github.com/anversoft/node-red-contrib-advanced-ftp/blob/ma
 
 Contributing
 -------
-
 Both submitting issues to [GitHub issues](https://github.com/anversoft/node-red-contrib-advanced-ftp/issues) and Pull requests are welcome to contribute.
+
+## Contributors
+Here is a list of contributors. Thank you to everyone involved for improving this project!
+
+<a href="https://github.com/anversoft/node-red-contrib-advanced-ftp/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=anversoft/node-red-contrib-advanced-ftp" />
+</a>
+
